@@ -1,0 +1,15 @@
+• API do Ingresso.com
+https://suporte.ingresso.com/portal/pt-br/kb/articles/integra%C3%A7%C3%A3o-com-a-api-de-conte%C3%BAdo-1-11-2022
+
+• Shapefile do município do Rio de Janeiro
+https://geo.mprj.mp.br/portal/home/item.html?id=385cc49696604038b45ca3bff671463a
+
+• Arquivo XLS com a população por Região Administrativa
+https://www.data.rio/documents/ba877d53302346eca990a47c99e15f74/about
+
+
+
+• Mapas Interativos e Outros Infográficos
+https://pcrj.maps.arcgis.com/apps/Cascade/index.html?appid=5539cb3f3eea4b06b6d4fd6b52ae650b
+
+https://pcrj.maps.arcgis.com/apps/webappviewer/index.html?id=1104378b365844469540bea9482e8b6b
