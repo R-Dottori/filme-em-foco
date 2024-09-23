@@ -21,5 +21,6 @@ e ao cinema mais igualitário, além de incentivar o consumo de obras brasileira
 4 - Rodar a aplicação no terminal: "streamlit run ./app/streamlit_app.py"
 
 ## Aplicativo
+https://filme-em-foco-tp2.streamlit.app/
 
-Feitas as instalações, rodar localmente no terminal: "streamlit run ./apps/tp2_app_final.py"
+Ou rodar localmente no terminal: "streamlit run ./apps/tp2_app_final.py"
