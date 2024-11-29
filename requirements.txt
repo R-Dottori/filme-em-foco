@@ -1,9 +1,14 @@
+beautifulsoup4
+fastapi
 folium
 geopandas
+httpie
 jupyter
 pandas
-requests
+pydantic
+selenium
 shapely
 streamlit
 streamlit-folium
+uvicorn
 wordcloud

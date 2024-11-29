@@ -1,27 +1,20 @@
 • API do Ingresso.com:
 — Fonte: Consultas na API do Ingresso.com
 — Formato: Dados textuais em tabelas .CSV
-— Objetivo: Catálogo dos complexos de cinema no município do Rio de Janeiro, utilizando uma fonte via API.
+— Objetivo: Informações dos filmes em cartaz
 
-
-
-• Shapefile com os polígonos das Regiões Administrativas do Rio de Janeiro:
-— Fonte: Disponibilizado pelo Sistema Municipal de Informações Urbanas- SIURB/PCRJ
-— Formato: Arquivo .zip contendo o Shapefile (incluindo outros arquivos .shp, .dbf, .shx, etc.)
-— Objetivo: Criar um mapa interativo com as divisões de RAs e mapear cada complexo de cinema de acordo
-
-
+— — —
 
 • Informações do IMDb:
+
 — Fonte: Raspagem de dados de filmes no portal IMDb
-— Formato: Dados textuais contendo informações como título do filme, diretor e análises dos usuários
-— Objetivo: Exibir informações dos filmes que não estão disponíveis na API e criar nuvem de palavras com os termos mais usados pelos espectadores
+— Formato: Dados textuais contendo informações como título do filme, diretor, análises dos usuários, etc.
+— Objetivo: Alimentar os modelos de IA com um catálogo expansivo de filmes.
 
+— — —
 
+• Mais dados de outros portais sobre cinema:
 
-
-
-• Dados Estáticos da ANCINE (NÃO UTILIZADO):
-— Fonte: Dados estáticos disponíveis no Portal de Dados Abertos
-— Formato: Dados textuais em tabelas .CSV
-— Objetivo: Catalogar todos os complexos de cinema no município do Rio de Janeiro.
+— Fonte: Raspagem de dados de outros portais, como Rotten Tomatoes ou catálogos de serviços de *streaming*
+— Formato: Dados textuais contendo informações como título do filme, diretor, análises dos usuários, etc.
+— Objetivo: Complementar a fonte do IMDb. Por exemplo, para ter análises somente da crítica especializada.

@@ -1,13 +1,15 @@
 /.venv_app
 /Rafael_Dottori_PB_TP1.pdf
 /Rafael_Dottori_PB_TP1_notebook.ipynb
+/Rafael_Dottori_PB_TP2.pdf
+/Rafael_Dottori_PB_TP2_notebook.ipynb
+/Rafael_Dottori_PB_TP3_notebook.pdf
+/Rafael_Dottori_PB_TP3_notebook.ipynb
 /apps/tp1_app.py
 /data/bilheteria_rj_ancine.csv
 /data/mapa_rj.html
 /data/populacao_rj_ra.xls
 /data/salas_rj_ancine.csv
-/docs/Canvas - Photoshop.psd
-/docs/links_importantes.txt
-/docs/tp1_business_model_canvas.png
-/docs/tp1_project_folder_structure.png
+/data/imdb_scraping.csv
 /modeling/tests.ipynb
+/old/*
