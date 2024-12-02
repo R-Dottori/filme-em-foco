@@ -13,13 +13,13 @@
 /Rafael_Dottori_PB_TP5.pdf
 /Rafael_Dottori_PB_TP5_notebook.ipynb
 /Rafael_Dottori_PB_TP5.zip
+/Rafael_Dottori_PB.pdf
 
-/data/filmes.csv
-/data/filmes_copia.csv
-/data/top_250_analises_copia.csv
-/data/top_250_filmes_copia.csv
+/modeling/tests.ipynb
+/modeling/chatbot.ipynb
+/modeling/dashboard.ipynb
 
 /.env
 /Link GitHub.txt
-/modeling/tests.ipynb
+/cache/*
 /old/*

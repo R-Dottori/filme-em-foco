@@ -1,5 +1,5 @@
 • API do Ingresso.com:
-— Fonte: Consultas na API do Ingresso.com
+— Fonte: Consultas na API do Ingresso.com e raspagens no site
 — Formato: Dados textuais em tabelas .CSV
 — Objetivo: Informações dos filmes em cartaz
 

@@ -14,6 +14,8 @@ sobre filmes, sessões de cinema, recomendações e opiniões da audiência.
 
 3 - Instalar as dependências: "python -m pip install -r requirements.txt"
 
-4 - Rodar a API: "uvicorn src.api:app"
+4 - Configurar o arquivo ".env" com a chave da API do Gemini (GEMINI_KEY)
 
-5 - Rodar o aplicativo do Streamlit: "streamlit run ./src/filme_foco.py"
+5 - Rodar a API: "uvicorn src.api:app"
+
+6 - Rodar o aplicativo do Streamlit: "streamlit run ./src/filme_foco.py"

@@ -3,6 +3,7 @@ fastapi
 google-generativeai
 httpie
 jupyter
+matplotlib
 pandas
 pydantic
 selenium
