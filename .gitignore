@@ -13,12 +13,14 @@
 /Rafael_Dottori_PB_TP5.pdf
 /Rafael_Dottori_PB_TP5_notebook.ipynb
 /Rafael_Dottori_PB_TP5.zip
+/Rafael_Dottori_PB.ipynb
 /Rafael_Dottori_PB.pdf
 
 /modeling/tests.ipynb
 /modeling/chatbot.ipynb
 /modeling/dashboard.ipynb
 
+/src/__pycache__
 /.env
 /Link GitHub.txt
 /cache/*
