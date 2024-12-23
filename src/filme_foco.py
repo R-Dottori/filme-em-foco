@@ -8,6 +8,10 @@ import google.generativeai as genai
 import os
 import time
 import matplotlib.pyplot as plt
+import seaborn as sns
+from wordcloud import WordCloud
+from nltk.corpus import stopwords
+import nltk
 
 
 
@@ -21,18 +25,23 @@ api_key = os.getenv('GEMINI_KEY')
 genai.configure(api_key=api_key)
 modelo = genai.GenerativeModel('gemini-1.5-flash')
 
+
+nltk.download('stopwords')
+
 pag_1_title = 'Página Inicial'
 pag_2_title = 'Filmes Em Cartaz'
-pag_3_title = 'Chatbot'
-pag_4_title = 'Análise de Sentimentos'
-pag_5_title = 'Opções'
+pag_3_title = 'Outros Filmes'
+pag_4_title = 'Chatbot'
+pag_5_title = 'Análise de Sentimentos'
+pag_6_title = 'Opções'
 
 
-if all(key not in st.session_state for key in ['base_filmes', 'em_cartaz_df', 'em_cartaz_json', 'historico_chatbot', 'infos_usuario']):
+if all(key not in st.session_state for key in ['base_filmes', 'df_base', 'em_cartaz_df', 'em_cartaz_json', 'historico_chatbot', 'infos_usuario']):
     try:
         resp_filmes = requests.get('http://127.0.0.1:8000/top_250').text
         st.session_state['base_filmes'] = json.loads(resp_filmes)
-        # st.session_state['base_filmes'] = ''
+        st.session_state['df_base'] = pd.DataFrame(st.session_state['base_filmes'])
+        st.session_state['df_base'].drop(['analises'], axis=1, inplace=True)
         resp_cartaz = requests.get('http://127.0.0.1:8000/em_cartaz').text
         em_cartaz_json = json.loads(resp_cartaz)
         em_cartaz_df = pd.DataFrame(em_cartaz_json)
@@ -61,7 +70,7 @@ def chatbot(prompt):
     Caso existam conflitos entre as informações da base e seu treinamento prévio, dê prioridade para a base fornecida.
 
     Você também tem acesso aos filmes que estão atualmente em cartaz.
-    Tente priorizar as sugestões caso algum filme em cartaz se encaixe nos gostos do usuário.
+    Priorize que as sugestões sejam para os filmes em cartaz, caso algum encaixe nos gostos do usuário.
     
     Um de seus objetivos é dar sugestões de filmes para os usuários, baseando-se na base de dados, nos filmes em cartaz e nas preferências do usuário.
     Caso sinta que a pergunta do usuário não é suficiente para gerar uma resposta adequada, indique como o usuário pode incrementar a sua pergunta.
@@ -171,9 +180,9 @@ def analise_sentimentos(filme):
     if num_analises > 5:
         perc_pos = round(analises_pos / num_analises * 100)
         perc_neg = round(analises_neg / num_analises * 100)
+        st.write(f'Consenso das Opiniões: {consenso}')
         st.write(f'Avaliações Positivas: {perc_pos}%')
         st.write(f'Avaliações Negativas: {perc_neg}%')
-        st.write(f'Consenso das Opiniões: {consenso}')
         fig, ax = plt.subplots()
         ax.bar(['Análises Positivas', 'Análises Negativas'], [perc_pos, perc_neg], color=['green', 'red'])
         ax.set_title('Visualização')
@@ -216,8 +225,59 @@ def pagina_dois():
         st.error('Erro ao carregar os filmes em cartaz.')
 
 
+
 def pagina_tres():
     st.title(pag_3_title)
+    st.header('Lista de Filmes')
+    st.write(st.session_state['df_base'])
+
+    st.header('Visualizações')
+
+    generos_bruto = [genero for genero in st.session_state['df_base']['genero']]
+    generos = []
+    for genero in generos_bruto:
+        genero = genero.replace('[', '').replace(']', '').replace(',', '').replace("'", '')
+        genero = genero.split()
+        for x in genero:
+            if x == 'Adicionar' or x == 'aviso' or x == 'de' or x == 'conteúdo' or x == 'científica' or x == 'Filme':
+                pass
+            else:
+                if x == 'Ficção':
+                    x = 'Ficção Científica'
+                if x == 'noir':
+                    x = 'Noir'
+                generos.append(x)
+
+    df_generos = pd.DataFrame(generos, columns=['genero'])
+
+    plt.figure()
+    sns.countplot(data=df_generos, y='genero', hue='genero', order=df_generos['genero'].value_counts().index)
+    plt.title('Frequência de Gêneros')
+    plt.xlabel('Contagem')
+    plt.ylabel('Gênero')
+    st.pyplot(plt)
+
+    with st.spinner('Carregando...'):
+        sinopses = ' '.join(st.session_state['df_base']['sinopse'].astype(str))
+        stop_words = set(stopwords.words('portuguese'))
+        nuvem = WordCloud(
+            width=1000, 
+            height=500,
+            background_color='white',
+            stopwords=stop_words,
+        ).generate(sinopses)
+
+        plt.figure()
+        plt.imshow(nuvem)
+        plt.axis('off')
+        plt.title('Nuvem de Palavras das Sinopses')
+        st.pyplot(plt)
+    
+
+
+
+def pagina_quatro():
+    st.title(pag_4_title)
     
     avatares = {
     'human': 'user',
@@ -245,8 +305,8 @@ def pagina_tres():
             st.chat_message('assistant').write(resposta)
 
 
-def pagina_quatro():
-    st.title(pag_4_title)
+def pagina_cinco():
+    st.title(pag_5_title)
     opcoes_sel = [filme['titulo'] for filme in st.session_state['em_cartaz_json']]
     selecao = st.selectbox('Escolha um filme:', options=opcoes_sel)
     filme_sel = next(filme for filme in st.session_state['em_cartaz_json'] if filme['titulo'] == selecao)
@@ -254,18 +314,26 @@ def pagina_quatro():
         analise_sentimentos(filme_sel)
 
 
-def pagina_cinco():
-    st.title(pag_5_title)
-    if st.button('Apagar cache do usuário'):
+def pagina_seis():
+    st.title(pag_6_title)
+    if st.button('Exibir cache de usuário:'):
+        with open('./cache/infos_usuario.txt', 'r', encoding='utf-8') as arquivo:
+            cache = ' '.join(arquivo)
+            if cache == '':
+                st.warning('Cache vazio.')
+            else:
+                st.write(cache)
+    if st.button('Apagar cache de usuário'):
         with open('./cache/infos_usuario.txt', 'w', encoding='utf-8') as arquivo:
             arquivo.write('')
         st.success('Cache apagado.')
 
 
 
+
 # Menu de Navegação
 st.sidebar.title('Navegação')
-pagina = st.sidebar.radio(label='Escolha uma página:', options=(pag_1_title, pag_2_title, pag_3_title, pag_4_title, pag_5_title))
+pagina = st.sidebar.radio(label='Escolha uma página:', options=(pag_1_title, pag_2_title, pag_3_title, pag_4_title, pag_5_title, pag_6_title))
 if pagina == pag_1_title:
     pagina_um()
 elif pagina == pag_2_title:
@@ -274,5 +342,7 @@ elif pagina == pag_3_title:
     pagina_tres()
 elif pagina == pag_4_title:
     pagina_quatro()
-else:
+elif pagina == pag_5_title:
     pagina_cinco()
+else:
+    pagina_seis()
