@@ -28,12 +28,11 @@ modelo = genai.GenerativeModel('gemini-1.5-flash')
 
 nltk.download('stopwords')
 
-pag_1_title = 'Página Inicial'
-pag_2_title = 'Filmes Em Cartaz'
-pag_3_title = 'Outros Filmes'
-pag_4_title = 'Chatbot'
-pag_5_title = 'Análise de Sentimentos'
-pag_6_title = 'Opções'
+pag_1_title = 'Recomendações'
+pag_2_title = 'Análise de Sentimentos'
+pag_3_title = 'Filmes Em Cartaz'
+pag_4_title = 'Outros Filmes'
+pag_5_title = 'Opções'
 
 
 if all(key not in st.session_state for key in ['base_filmes', 'df_base', 'em_cartaz_df', 'em_cartaz_json', 'historico_chatbot', 'infos_usuario']):
@@ -41,7 +40,6 @@ if all(key not in st.session_state for key in ['base_filmes', 'df_base', 'em_car
         resp_filmes = requests.get('http://127.0.0.1:8000/top_250').text
         st.session_state['base_filmes'] = json.loads(resp_filmes)
         st.session_state['df_base'] = pd.DataFrame(st.session_state['base_filmes'])
-        st.session_state['df_base'].drop(['analises'], axis=1, inplace=True)
         resp_cartaz = requests.get('http://127.0.0.1:8000/em_cartaz').text
         em_cartaz_json = json.loads(resp_cartaz)
         em_cartaz_df = pd.DataFrame(em_cartaz_json)
@@ -62,19 +60,20 @@ def chatbot(prompt):
     instrucoes = f"""
     Você é um chatbot altamente sofisticado e especialista em cinema.
 
-    Você tem acesso a uma base de dados de filmes com as seguintes colunas:
+    Você tem acesso aos filmes que estão atualmente em cartaz.
+    Priorize que as sugestões sejam para os filmes em cartaz, caso algum encaixe nos gostos do usuário.
+
+    Você também tem acesso a uma base de dados de filmes com as seguintes colunas:
     titulo - titulo_original - ano - duracao - diretor - roteirista - elenco - nota - num_votos - sinopse - genero - verba - receita
     A duração dos filmes na coluna duracao está em minutos. Por exemplo: 120 = 2 horas; 60 = 1 hora; 90 = 1 hora e 30 minutos.
     Caso a coluna de verba e/ou receita estejam iguais a 0, considere que o dado não foi coletado corretamente e não que esses sejam os valores observados.
     Você SEMPRE tem acesso a essa base, independente do seu histórico de mensagens.
     Caso existam conflitos entre as informações da base e seu treinamento prévio, dê prioridade para a base fornecida.
-
-    Você também tem acesso aos filmes que estão atualmente em cartaz.
-    Priorize que as sugestões sejam para os filmes em cartaz, caso algum encaixe nos gostos do usuário.
     
     Um de seus objetivos é dar sugestões de filmes para os usuários, baseando-se na base de dados, nos filmes em cartaz e nas preferências do usuário.
     Caso sinta que a pergunta do usuário não é suficiente para gerar uma resposta adequada, indique como o usuário pode incrementar a sua pergunta.
     MESMO ASSIM, sempre complete a sugestão, ainda que a resposta não seja ideal.
+    Se nenhum dos filmes em cartaz for parecido com o pedido do usuário, indique um filme da outra base.
 
     Você tem acesso a todo o histórico de conversas da sessão que estiver rodando.
     Consulte o histórico, mas não exiba seu conteúdo a não ser que seja explicitamente solicitado.
@@ -194,14 +193,46 @@ def analise_sentimentos(filme):
 # Conteúdo das Páginas
 def pagina_um():
     st.title('Filme em Foco')
-    st.image('https://daily.kellogg.edu/wp-content/uploads/2018/08/film-interpretation.jpg')
-    st.write('Bem-vindos ao projeto Filme em Foco!')
-    st.write('O objetivo desse aplicativo é trazer informações sobre cinema.')
-    st.write('Além de exibir os filmes em cartaz atualmente, temos assistentes movidos a IA para gerar sugestões de filmes e avaliar as opiniões dos usuários sobre um título qualquer.')
 
+    st.header('Alfred Hitchbot')
+
+    avatares = {
+    'human': 'user',
+    'ai': 'assistant'
+    }
+
+    st.chat_message('assistant').write("""Olá! Sou o Alfred Hitchbot, um assistente virtual especializado em cinema.
+
+    \nMe faça qualquer pergunta!
+
+    \nSe quiser uma sugestão de filme, me conte um pouquinho sobre o que está procurando, como seu filme favorito ou um gênero específico.
+    """)
+
+    if st.session_state['historico_chatbot'] != '':
+        for mensagem in st.session_state['historico_chatbot'].split('• Pergunta do Usuário'):
+            if mensagem != '':
+                pos_bot = mensagem.find('• Resposta do Chatbot')
+                st.chat_message('user').write(mensagem[2:pos_bot].strip())
+                st.chat_message('assistant').write(mensagem[pos_bot + 23:].strip())
+
+    if prompt := st.chat_input('Digite sua mensagem'):
+        st.chat_message('user').write(prompt)
+        with st.spinner('Processando...'):
+            resposta = chatbot(prompt)
+            st.chat_message('assistant').write(resposta)
 
 def pagina_dois():
     st.title(pag_2_title)
+    opcoes_sel = [filme['titulo'] for filme in st.session_state['em_cartaz_json']]
+    selecao = st.selectbox('Escolha um filme:', options=opcoes_sel)
+    filme_sel = next(filme for filme in st.session_state['em_cartaz_json'] if filme['titulo'] == selecao)
+    if st.button('Gerar análise'):
+        with st.spinner('Processando...'):
+            analise_sentimentos(filme_sel)
+    
+
+def pagina_tres():
+    st.title(pag_3_title)
     try:
         for filme in st.session_state['em_cartaz_json']:
             poster, infos = st.columns(2)
@@ -226,8 +257,8 @@ def pagina_dois():
 
 
 
-def pagina_tres():
-    st.title(pag_3_title)
+def pagina_quatro():
+    st.title(pag_4_title)
     st.header('Lista de Filmes')
     st.write(st.session_state['df_base'])
 
@@ -272,68 +303,20 @@ def pagina_tres():
         plt.axis('off')
         plt.title('Nuvem de Palavras das Sinopses')
         st.pyplot(plt)
-    
-
-
-
-def pagina_quatro():
-    st.title(pag_4_title)
-    
-    avatares = {
-    'human': 'user',
-    'ai': 'assistant'
-    }
-
-    if st.session_state['historico_chatbot'] != '':
-        for mensagem in st.session_state['historico_chatbot'].split('• Pergunta do Usuário'):
-            if mensagem != '':
-                pos_bot = mensagem.find('• Resposta do Chatbot')
-                st.chat_message('user').write(mensagem[2:pos_bot].strip())
-                st.chat_message('assistant').write(mensagem[pos_bot + 23:].strip())
-    else:
-        st.chat_message('assistant').write("""Olá! Sou um assistente virtual especializado em cinema.
-
-        \nMe faça qualquer pergunta!
-
-        \nSe quiser uma sugestão, me conte um pouquinho sobre o que está procurando, como seu filme favorito ou um gênero específico.
-        """)
-
-    if prompt := st.chat_input('Digite sua mensagem'):
-        st.chat_message('user').write(prompt)
-        with st.spinner('Processando...'):
-            resposta = chatbot(prompt)
-            st.chat_message('assistant').write(resposta)
 
 
 def pagina_cinco():
     st.title(pag_5_title)
-    opcoes_sel = [filme['titulo'] for filme in st.session_state['em_cartaz_json']]
-    selecao = st.selectbox('Escolha um filme:', options=opcoes_sel)
-    filme_sel = next(filme for filme in st.session_state['em_cartaz_json'] if filme['titulo'] == selecao)
-    with st.spinner('Processando...'):
-        analise_sentimentos(filme_sel)
-
-
-def pagina_seis():
-    st.title(pag_6_title)
-    if st.button('Exibir cache de usuário:'):
-        with open('./cache/infos_usuario.txt', 'r', encoding='utf-8') as arquivo:
-            cache = ' '.join(arquivo)
-            if cache == '':
-                st.warning('Cache vazio.')
-            else:
-                st.write(cache)
-    if st.button('Apagar cache de usuário'):
+    if st.button('Apagar cache do usuário'):
         with open('./cache/infos_usuario.txt', 'w', encoding='utf-8') as arquivo:
             arquivo.write('')
         st.success('Cache apagado.')
 
 
 
-
 # Menu de Navegação
 st.sidebar.title('Navegação')
-pagina = st.sidebar.radio(label='Escolha uma página:', options=(pag_1_title, pag_2_title, pag_3_title, pag_4_title, pag_5_title, pag_6_title))
+pagina = st.sidebar.radio(label='Escolha uma página:', options=(pag_1_title, pag_2_title, pag_3_title, pag_4_title, pag_5_title))
 if pagina == pag_1_title:
     pagina_um()
 elif pagina == pag_2_title:
@@ -342,7 +325,5 @@ elif pagina == pag_3_title:
     pagina_tres()
 elif pagina == pag_4_title:
     pagina_quatro()
-elif pagina == pag_5_title:
-    pagina_cinco()
 else:
-    pagina_seis()
+    pagina_cinco()
